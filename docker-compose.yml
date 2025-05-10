@@ -1,0 +1,5 @@
+version: '3.1'
+services:
+  paperless-ngx-llm-utils:
+    image: paperless-ngx-llm-utils
+    restart: always

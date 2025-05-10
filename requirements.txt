@@ -1,0 +1,5 @@
+python-dotenv==1.1.0
+pypaperless==4.0.0
+openai==1.78.0
+mistralai==1.7.0
+requests==2.32.3
