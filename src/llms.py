@@ -4,6 +4,7 @@ import base64
 import os
 from mistralai import Mistral
 from openai import OpenAI
+from pathlib import Path
 
 # Load environment variables from .env file
 load_dotenv()
@@ -26,7 +27,7 @@ def get_title_with_openai(text):
         openai.error.OpenAIError: If there is an issue with the OpenAI API request.
     """
 
-    with open(os.path.join(os.path.dirname(__file__), "prompts", "title.txt"), "r", encoding="utf-8") as f:
+    with open(Path(__file__).parent / "prompts" / "title.txt", "r", encoding="utf-8") as f:
         instructions = f.read()
 
     instructions = instructions.replace("{{OPENAI_LANGUAGE}}", os.getenv("OPENAI_LANGUAGE"))
