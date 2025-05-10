@@ -2,6 +2,6 @@ services:
   paperless-llm-utils:
     build: .
     env_file: .env
-    restart: never
+    restart: no
     image: paperless-llm-utils
     container_name: paperless-llm-utils
