@@ -1,8 +1,8 @@
 # Paperless-ngx LLM Utils
 
-`paperless-ngx-llm-utils` is a utility script designed to enhance the functionality of [Paperless-ngx](https://github.com/paperless-ngx/paperless-ngx) with LLMs and OCR. The docker image automatically processes documents tagged with specific tags in Paperless-ngx. It automatically generates a title with ChatGPT or can be used to redo OCR text extraction with Mistral into a markdown format.
+`paperless-ngx-llm-utils` is a lightweight script designed to enhance the functionality of [Paperless-ngx](https://github.com/paperless-ngx/paperless-ngx) with LLMs and OCR. The docker image automatically processes documents with specific tags from Paperless-ngx. It generates a title with ChatGPT or can be used to redo OCR text extraction with Mistral into a markdown format.
 
-It is losely inspired by [paperless-ngx-openai-title](https://github.com/cgiesche/paperless-ngx-openai-title/tree/master).
+It is losely inspired and based on [paperless-ngx-openai-title](https://github.com/cgiesche/paperless-ngx-openai-title/tree/master).
 
 ## Features
 
