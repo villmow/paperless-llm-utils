@@ -1,6 +1,6 @@
 # Paperless-ngx LLM Utils
 
-`paperless-ngx-llm-utils` is a lightweight script designed to enhance the functionality of [Paperless-ngx](https://github.com/paperless-ngx/paperless-ngx) with LLMs and OCR. The docker image automatically processes documents with specific tags from Paperless-ngx. It generates a title with ChatGPT or can be used to redo OCR text extraction with Mistral into a markdown format.
+`paperless-llm-utils` is a lightweight script designed to enhance the functionality of [Paperless-ngx](https://github.com/paperless-ngx/paperless-ngx) with LLMs and OCR. The docker image automatically processes documents with specific tags from Paperless-ngx. It generates a title with ChatGPT or can be used to redo OCR text extraction with Mistral into a markdown format.
 
 It is losely inspired and based on [paperless-ngx-openai-title](https://github.com/cgiesche/paperless-ngx-openai-title/tree/master).
 
@@ -36,8 +36,8 @@ It is losely inspired and based on [paperless-ngx-openai-title](https://github.c
 
 1. Clone this repository:
    ```bash
-   git clone https://github.com/villmow/paperless-ngx-llm-utils.git
-   cd paperless-ngx-llm-utils
+   git clone https://github.com/villmow/paperless-llm-utils.git
+   cd paperless-llm-utils
    ```
 
 2. Install dependencies:
@@ -67,12 +67,12 @@ It is losely inspired and based on [paperless-ngx-openai-title](https://github.c
 
 1. Build the Docker image:
    ```bash
-   docker build -t paperless-ngx-llm-utils .
+   docker build -t paperless-llm-utils .
    ```
 
 2. Run the container:
    ```bash
-   docker run --env-file .env paperless-ngx-llm-utils
+   docker run --env-file .env paperless-llm-utils
    ```
 
 3. (Optional) Use Docker Compose for periodic execution:
@@ -80,7 +80,7 @@ It is losely inspired and based on [paperless-ngx-openai-title](https://github.c
      ```yaml
      version: '3.8'
      services:
-       paperless-ngx-llm-utils:
+       paperless-llm-utils:
          build: .
          env_file: .env
          restart: always
