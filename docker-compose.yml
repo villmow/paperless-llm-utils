@@ -3,4 +3,5 @@ services:
     build: .
     env_file: .env
     restart: always
+    image: paperless-llm-utils
     container_name: paperless-llm-utils
