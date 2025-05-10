@@ -76,20 +76,9 @@ It is losely inspired and based on [paperless-ngx-openai-title](https://github.c
    ```
 
 3. (Optional) Use Docker Compose for periodic execution:
-   - Add a `docker-compose.yml` file with the following content:
-     ```yaml
-     services:
-       paperless-llm-utils:
-         build: .
-         env_file: .env
-         restart: always
-         image: paperless-llm-utils
-         container_name: paperless-llm-utils
-     ```
-   - Start the service:
-     ```bash
-     docker-compose up -d
-     ```
+   ```bash
+   docker-compose up -d --build
+   ```
 
 ### Using Cron (for periodic execution)
 
