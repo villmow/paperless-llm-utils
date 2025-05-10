@@ -8,7 +8,7 @@ from openai import OpenAI
 # Load environment variables from .env file
 load_dotenv()
 
-openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+openai_client = OpenAI()
 mistral_client = Mistral(api_key=os.getenv("MISTRAL_API_KEY"))
 
 def get_title_with_openai(text):
