@@ -19,4 +19,4 @@ RUN touch /var/log/cron.log
 RUN crontab /etc/cron.d/crontab
 
 # Execute the script and then start cron job
-CMD python src/main.py && cron && tail -f /var/log/cron.log
+CMD ["sh", "-c", "python src/main.py && cron && tail -f /var/log/cron.log"]
