@@ -84,6 +84,7 @@ It is losely inspired and based on [paperless-ngx-openai-title](https://github.c
          build: .
          env_file: .env
          restart: always
+         container_name: paperless-llm-utils
      ```
    - Start the service:
      ```bash
