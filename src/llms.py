@@ -5,9 +5,14 @@ import os
 from mistralai import Mistral
 from openai import OpenAI
 from pathlib import Path
+import structlog
+
+import logging_config  # Initialize logging configuration
 
 # Load environment variables from .env file
 load_dotenv()
+
+logger = structlog.get_logger(__name__)
 
 openai_client = OpenAI()
 mistral_client = Mistral(api_key=os.getenv("MISTRAL_API_KEY"))
@@ -65,7 +70,7 @@ def get_ocr_with_mistral(document: bytes):
         try:
             return base64.b64encode(document).decode('utf-8')
         except Exception as e:  # Added general exception handling
-            print(f"Error: {e}")
+            logger.error("Error encoding PDF to base64", error=str(e))
             return None
 
     # Getting the base64 string

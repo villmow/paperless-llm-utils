@@ -1,10 +1,15 @@
 import requests
 import os
 from dotenv import load_dotenv
+import structlog
+
+import logging_config  # Initialize logging configuration
 
 
 # Load environment variables from .env file
 load_dotenv()
+
+logger = structlog.get_logger(__name__)
 
 
 def find_documents_with_tag_id(tag_id):
@@ -30,10 +35,10 @@ def find_documents_with_tag_id(tag_id):
             documents_url = data.get('next', None)
 
         elif response.status_code == 404:
-            print("No documents found for the specified tag.")
-            return 
+            logger.warning("No documents found for the specified tag", tag_id=tag_id)
+            return
         else:
-            print(f"Error: Received status code {response.status_code}")
+            logger.error("Error retrieving documents", status_code=response.status_code, tag_id=tag_id)
             return 
 
     return all_document_ids
@@ -58,8 +63,10 @@ def patch_document(document_id, **kwargs):
 
     # Check the result of the request
     if update_response.status_code == 200:
-        print(f'Document ID {document_id}: Document updated successfully!')
+        logger.info("Document updated successfully", document_id=document_id)
         return True
     else:
-        print(f'Document ID {document_id}: Error updating the document! Status code {update_response.status_code}')
+        logger.error("Error updating the document",
+                    document_id=document_id,
+                    status_code=update_response.status_code)
         return False

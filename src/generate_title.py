@@ -2,13 +2,17 @@ import os
 from dotenv import load_dotenv
 import asyncio
 from pypaperless import Paperless
+import structlog
 
 from utils import patch_document
 from llms import get_ocr_with_mistral, get_title_with_openai
+import logging_config  # Initialize logging configuration
 
 
 # Load environment variables from .env file
 load_dotenv()
+
+logger = structlog.get_logger(__name__)
 
     
 async def titelize_document(document_id, remove_tag_id=None):
@@ -30,35 +34,35 @@ async def titelize_document(document_id, remove_tag_id=None):
     Raises:
         Any exceptions raised by the Paperless API or OpenAI integration will propagate to the caller.
     """
-    paperless = Paperless(os.getenv("PAPERLESS_BASE_URL"), 
+    paperless = Paperless(os.getenv("PAPERLESS_BASE_URL"),
                         os.getenv("PAPERLESS_API_KEY"))
-    
+
     await paperless.initialize()
 
-    print(f'Document ID {document_id}: Processing document')
+    logger.info("Processing document", document_id=document_id)
 
     # Collect document information from paperless
-    print(f'Document ID {document_id}: Reading document details from paperless.')
+    logger.info("Reading document details from paperless", document_id=document_id)
     document = await paperless.documents(document_id)
 
     if not document.content.strip():
-        print(f'Document ID {document_id}: Document content is empty. Skipping title generation.')
+        logger.warning("Document content is empty, skipping title generation", document_id=document_id)
         return
-    
+
     # Get the title using OpenAI
-    print(f'Document ID {document_id}: Generating title using OpenAI.')
+    logger.info("Generating title using OpenAI", document_id=document_id)
     title = get_title_with_openai(document.content)
 
-    print(f'Document ID {document_id}: Generated title: {title}')
-    
+    logger.info("Generated title", document_id=document_id, title=title)
+
     # Update the document with the new title
-    print(f'Document ID {document_id}: Updating document title in paperless.')
+    logger.info("Updating document title in paperless", document_id=document_id)
     if remove_tag_id is not None:
             tags = document.tags
-            print(f'Document ID {document_id}: Document tags: {tags}')
+            logger.info("Document tags", document_id=document_id, tags=tags)
 
             tags = [tag for tag in tags if tag != remove_tag_id]
-            print(f'Document ID {document_id}: Removing tag {remove_tag_id} from document.')
+            logger.info("Removing tag from document", document_id=document_id, tag_id=remove_tag_id)
             patch_document(document_id, title=title, tags=tags)
     else:
         patch_document(document_id, title=title)
@@ -75,7 +79,7 @@ async def main():
         # Process the document with the specified ID
         await titelize_document(document_id, remove_tag_id=int(os.getenv("PAPERLESS_GENERATE_TITLE_TAG_ID")))
 
-    print('Finished processing document.')
+    logger.info("Finished processing document")
 
 
 if __name__ == "__main__":

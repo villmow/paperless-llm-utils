@@ -2,14 +2,18 @@ import os
 from dotenv import load_dotenv
 import asyncio
 from pypaperless import Paperless
+import structlog
 
 from utils import patch_document
 from llms import get_ocr_with_mistral, get_title_with_openai
+import logging_config  # Initialize logging configuration
 
 # Load environment variables from .env file
 load_dotenv()
 
-paperless = Paperless(os.getenv("PAPERLESS_BASE_URL"), 
+logger = structlog.get_logger(__name__)
+
+paperless = Paperless(os.getenv("PAPERLESS_BASE_URL"),
                       os.getenv("PAPERLESS_API_KEY"))
 
 async def ocr_document(document_id, remove_tag_id=None):
@@ -33,24 +37,24 @@ async def ocr_document(document_id, remove_tag_id=None):
     
     await paperless.initialize()
 
-    print(f'Document ID {document_id}: Processing document')
+    logger.info("Processing document", document_id=document_id)
 
     # Collect document information from paperless
-    print(f'Document ID {document_id}: Reading document details from paperless.')
+    logger.info("Reading document details from paperless", document_id=document_id)
     document = await paperless.documents(document_id)
     download = await document.get_download()
-    
+
     ocr_text = get_ocr_with_mistral(download.content)
-    print(f'Document ID {document_id}: OCR text: {ocr_text}')
+    logger.info("OCR text extracted", document_id=document_id, ocr_text_length=len(ocr_text))
 
     # Update the document with the new content
-    print(f'Document ID {document_id}: Updating document content in paperless.')
+    logger.info("Updating document content in paperless", document_id=document_id)
     if remove_tag_id is not None:
             tags = document.tags
-            print(f'Document ID {document_id}: Document tags: {tags}')
+            logger.info("Document tags", document_id=document_id, tags=tags)
 
             tags = [tag for tag in tags if tag != remove_tag_id]
-            print(f'Document ID {document_id}: Removing tag {remove_tag_id} from document.')
+            logger.info("Removing tag from document", document_id=document_id, tag_id=remove_tag_id)
             patch_document(document_id, tags=tags, content=ocr_text)
     else:
         patch_document(document_id, content=ocr_text)
@@ -64,7 +68,7 @@ async def main():
     
     # Process the document with the specified ID
     await ocr_document(document_id)
-    print('Finished processing document.')
+    logger.info("Finished processing document")
 
 
 if __name__ == "__main__":
