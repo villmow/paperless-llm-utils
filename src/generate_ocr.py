@@ -37,29 +37,30 @@ async def ocr_document(document_id, remove_tag_id=None):
     
     await paperless.initialize()
 
-    logger.info("Processing document", document_id=document_id)
+    try:
+        logger.info("Processing document", document_id=document_id)
 
-    # Collect document information from paperless
-    logger.info("Reading document details from paperless", document_id=document_id)
-    document = await paperless.documents(document_id)
-    download = await document.get_download()
+        # Collect document information from paperless
+        logger.info("Reading document details from paperless", document_id=document_id)
+        document = await paperless.documents(document_id)
+        download = await document.get_download()
 
-    ocr_text = get_ocr_with_mistral(download.content)
-    logger.info("OCR text extracted", document_id=document_id, ocr_text_length=len(ocr_text))
+        ocr_text = get_ocr_with_mistral(download.content)
+        logger.info("OCR text extracted", document_id=document_id, ocr_text_length=len(ocr_text))
 
-    # Update the document with the new content
-    logger.info("Updating document content in paperless", document_id=document_id)
-    if remove_tag_id is not None:
-            tags = document.tags
-            logger.info("Document tags", document_id=document_id, tags=tags)
+        # Update the document with the new content
+        logger.info("Updating document content in paperless", document_id=document_id)
+        if remove_tag_id is not None:
+                tags = document.tags
+                logger.info("Document tags", document_id=document_id, tags=tags)
 
-            tags = [tag for tag in tags if tag != remove_tag_id]
-            logger.info("Removing tag from document", document_id=document_id, tag_id=remove_tag_id)
-            patch_document(document_id, tags=tags, content=ocr_text)
-    else:
-        patch_document(document_id, content=ocr_text)
-
-    await paperless.close()
+                tags = [tag for tag in tags if tag != remove_tag_id]
+                logger.info("Removing tag from document", document_id=document_id, tag_id=remove_tag_id)
+                patch_document(document_id, tags=tags, content=ocr_text)
+        else:
+            patch_document(document_id, content=ocr_text)
+    finally:
+        await paperless.close()
 
 
 async def main():
