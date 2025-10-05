@@ -5,8 +5,7 @@ from pypaperless import Paperless
 import structlog
 
 from utils import patch_document
-from llms import get_ocr_with_mistral, get_title_with_openai
-import logging_config  # Initialize logging configuration
+from llms import get_title_with_openai
 
 
 # Load environment variables from .env file
@@ -72,13 +71,11 @@ async def titelize_document(document_id, remove_tag_id=None):
 
 
 async def main():
-    async with paperless:
+    # Example usage
+    document_id = 261
 
-        # Example usage
-        document_id = 261
-        
-        # Process the document with the specified ID
-        await titelize_document(document_id, remove_tag_id=int(os.getenv("PAPERLESS_GENERATE_TITLE_TAG_ID")))
+    # Process the document with the specified ID
+    await titelize_document(document_id, remove_tag_id=int(os.getenv("PAPERLESS_GENERATE_TITLE_TAG_ID")))
 
     logger.info("Finished processing document")
 

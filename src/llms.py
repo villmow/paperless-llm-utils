@@ -7,7 +7,6 @@ from openai import OpenAI
 from pathlib import Path
 import structlog
 
-import logging_config  # Initialize logging configuration
 
 # Load environment variables from .env file
 load_dotenv()
@@ -75,8 +74,6 @@ def get_ocr_with_mistral(document: bytes):
 
     # Getting the base64 string
     base64_pdf = _encode_pdf(document)
-
-    api_key = os.environ["MISTRAL_API_KEY"]
 
     ocr_response = mistral_client.ocr.process(
         model="mistral-ocr-latest",

@@ -3,11 +3,12 @@ from dotenv import load_dotenv
 import os
 import structlog
 
+import logging_config  # noqa: F401 - Side effect: configures structlog
+
 from generate_title import titelize_document
 from generate_ocr import ocr_document
 
-from utils import find_documents_with_tag_id, patch_document
-import logging_config  # Initialize logging configuration
+from utils import find_documents_with_tag_id
 
 
 # Load environment variables from .env file

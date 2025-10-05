@@ -5,8 +5,7 @@ from pypaperless import Paperless
 import structlog
 
 from utils import patch_document
-from llms import get_ocr_with_mistral, get_title_with_openai
-import logging_config  # Initialize logging configuration
+from llms import get_ocr_with_mistral
 
 # Load environment variables from .env file
 load_dotenv()

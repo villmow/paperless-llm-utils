@@ -3,7 +3,6 @@ import os
 from dotenv import load_dotenv
 import structlog
 
-import logging_config  # Initialize logging configuration
 
 
 # Load environment variables from .env file
