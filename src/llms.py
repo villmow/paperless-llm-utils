@@ -2,7 +2,7 @@ from dotenv import load_dotenv
 import re
 import base64
 import os
-from mistralai import Mistral
+from mistralai.client import Mistral
 from openai import OpenAI
 from pathlib import Path
 import structlog
