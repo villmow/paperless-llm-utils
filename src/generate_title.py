@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 import asyncio
-from pypaperless import Paperless
+from pypaperless import PaperlessClient
 import structlog
 
 from utils import patch_document
@@ -33,12 +33,8 @@ async def titelize_document(document_id, remove_tag_id=None):
     Raises:
         Any exceptions raised by the Paperless API or OpenAI integration will propagate to the caller.
     """
-    paperless = Paperless(os.getenv("PAPERLESS_BASE_URL"),
-                        os.getenv("PAPERLESS_API_KEY"))
-
-    await paperless.initialize()
-
-    try:
+    async with PaperlessClient(os.getenv("PAPERLESS_BASE_URL"),
+                               os.getenv("PAPERLESS_API_KEY")) as paperless:
         logger.info("Processing document", document_id=document_id)
 
         # Collect document information from paperless
@@ -72,8 +68,6 @@ async def titelize_document(document_id, remove_tag_id=None):
             patch_document(document_id, title=title, tags=tags)
         else:
             patch_document(document_id, title=title)
-    finally:
-        await paperless.close()
 
 
 async def main():

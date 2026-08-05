@@ -1,8 +1,6 @@
 python-dotenv==1.2.2
-# pypaperless 6.x targets Paperless-ngx API version 10 and its probe is rejected
-# with HTTP 406 by older servers. Stay on 5.x until the Paperless-ngx instance
-# is upgraded past API version 9.
-pypaperless==5.2.3
+# Requires Paperless-ngx API version 10, i.e. server version 3.0 or newer.
+pypaperless==6.0.0
 openai==2.53.0
 mistralai==2.9.1
 requests==2.34.2

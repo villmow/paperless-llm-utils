@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 import asyncio
-from pypaperless import Paperless
+from pypaperless import PaperlessClient
 import structlog
 
 from utils import patch_document
@@ -32,21 +32,17 @@ async def ocr_document(document_id, remove_tag_id=None):
         Any exceptions raised during the Paperless API calls or OCR processing.
     """
 
-    # Built per call: the client cannot be reused once close() has run, so a
-    # module-level instance would fail with "Session is closed" on the second
-    # document of a batch.
-    paperless = Paperless(os.getenv("PAPERLESS_BASE_URL"),
-                          os.getenv("PAPERLESS_API_KEY"))
-
-    await paperless.initialize()
-
-    try:
+    # Built per call: the client cannot be reused once closed, so a module-level
+    # instance would fail with "Session is closed" on the second document of a
+    # batch. The context manager initializes it and guarantees the close.
+    async with PaperlessClient(os.getenv("PAPERLESS_BASE_URL"),
+                               os.getenv("PAPERLESS_API_KEY")) as paperless:
         logger.info("Processing document", document_id=document_id)
 
         # Collect document information from paperless
         logger.info("Reading document details from paperless", document_id=document_id)
         document = await paperless.documents(document_id)
-        download = await document.get_download()
+        download = await paperless.documents.download(document_id)
 
         ocr_text = get_ocr_with_mistral(download.content)
         logger.info("OCR text extracted", document_id=document_id, ocr_text_length=len(ocr_text))
@@ -68,8 +64,6 @@ async def ocr_document(document_id, remove_tag_id=None):
             patch_document(document_id, tags=tags, content=ocr_text)
         else:
             patch_document(document_id, content=ocr_text)
-    finally:
-        await paperless.close()
 
 
 async def main():
