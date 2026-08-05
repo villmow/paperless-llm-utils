@@ -16,6 +16,39 @@ logger = structlog.get_logger(__name__)
 openai_client = OpenAI()
 mistral_client = Mistral(api_key=os.getenv("MISTRAL_API_KEY"))
 
+# Reasoning effort levels defined by the Responses API. Which of these a given
+# model actually accepts is model-dependent (gpt-5.6-luna rejects "minimal" and
+# "max"), so this tuple only guards against typos - the API is the authority on
+# what the configured model supports.
+VALID_REASONING_EFFORTS = ("none", "minimal", "low", "medium", "high", "xhigh", "max")
+DEFAULT_REASONING_EFFORT = "low"
+
+
+def _get_reasoning_effort():
+    """
+    Reads the reasoning effort for the OpenAI Responses API from the environment.
+
+    Falls back to DEFAULT_REASONING_EFFORT if OPENAI_REASONING_EFFORT is unset or
+    is not a known effort level, so a typo degrades the title quality instead of
+    failing every request with a 400. A level that is valid in general but
+    unsupported by the configured model is still rejected by the API.
+
+    Returns:
+        str: One of VALID_REASONING_EFFORTS.
+    """
+
+    effort = os.getenv("OPENAI_REASONING_EFFORT", DEFAULT_REASONING_EFFORT).strip().lower()
+
+    if effort not in VALID_REASONING_EFFORTS:
+        logger.warning("Invalid reasoning effort, falling back",
+                       configured=effort,
+                       fallback=DEFAULT_REASONING_EFFORT,
+                       valid=VALID_REASONING_EFFORTS)
+        return DEFAULT_REASONING_EFFORT
+
+    return effort
+
+
 def get_title_with_openai(text):
     """
     Generates a title for the given text using OpenAI's language model.
@@ -36,10 +69,15 @@ def get_title_with_openai(text):
 
     instructions = instructions.replace("{{OPENAI_LANGUAGE}}", os.getenv("OPENAI_LANGUAGE"))
     
+    model = os.getenv("OPENAI_MODEL")
+    effort = _get_reasoning_effort()
+    logger.info("Requesting title from OpenAI", model=model, reasoning_effort=effort)
+
     response = openai_client.responses.create(
-        model=os.getenv("OPENAI_MODEL"),
+        model=model,
         instructions=instructions,
         input=text,
+        reasoning={"effort": effort},
     )
 
     return response.output_text
@@ -68,9 +106,11 @@ def get_ocr_with_mistral(document: bytes):
         """Encode the pdf to base64."""
         try:
             return base64.b64encode(document).decode('utf-8')
-        except Exception as e:  # Added general exception handling
+        except Exception as e:
+            # Returning None here would send the literal string "None" as the
+            # data URI payload, so fail loudly instead.
             logger.error("Error encoding PDF to base64", error=str(e))
-            return None
+            raise
 
     # Getting the base64 string
     base64_pdf = _encode_pdf(document)

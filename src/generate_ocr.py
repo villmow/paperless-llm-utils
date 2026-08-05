@@ -12,8 +12,6 @@ load_dotenv()
 
 logger = structlog.get_logger(__name__)
 
-paperless = Paperless(os.getenv("PAPERLESS_BASE_URL"),
-                      os.getenv("PAPERLESS_API_KEY"))
 
 async def ocr_document(document_id, remove_tag_id=None):
     """
@@ -33,7 +31,13 @@ async def ocr_document(document_id, remove_tag_id=None):
     Raises:
         Any exceptions raised during the Paperless API calls or OCR processing.
     """
-    
+
+    # Built per call: the client cannot be reused once close() has run, so a
+    # module-level instance would fail with "Session is closed" on the second
+    # document of a batch.
+    paperless = Paperless(os.getenv("PAPERLESS_BASE_URL"),
+                          os.getenv("PAPERLESS_API_KEY"))
+
     await paperless.initialize()
 
     try:
@@ -47,15 +51,21 @@ async def ocr_document(document_id, remove_tag_id=None):
         ocr_text = get_ocr_with_mistral(download.content)
         logger.info("OCR text extracted", document_id=document_id, ocr_text_length=len(ocr_text))
 
+        # Writing an empty result would overwrite the existing content with
+        # nothing. Keep the tag so the document is retried and stays visible.
+        if not ocr_text.strip():
+            logger.error("OCR returned no text, keeping existing content", document_id=document_id)
+            return
+
         # Update the document with the new content
         logger.info("Updating document content in paperless", document_id=document_id)
         if remove_tag_id is not None:
-                tags = document.tags
-                logger.info("Document tags", document_id=document_id, tags=tags)
+            tags = document.tags
+            logger.info("Document tags", document_id=document_id, tags=tags)
 
-                tags = [tag for tag in tags if tag != remove_tag_id]
-                logger.info("Removing tag from document", document_id=document_id, tag_id=remove_tag_id)
-                patch_document(document_id, tags=tags, content=ocr_text)
+            tags = [tag for tag in tags if tag != remove_tag_id]
+            logger.info("Removing tag from document", document_id=document_id, tag_id=remove_tag_id)
+            patch_document(document_id, tags=tags, content=ocr_text)
         else:
             patch_document(document_id, content=ocr_text)
     finally:

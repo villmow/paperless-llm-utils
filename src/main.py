@@ -45,7 +45,12 @@ async def run_for_tag(tag, func):
                        current=index,
                        total=total_documents,
                        document_id=doc_id)
-            await func(str(doc_id), remove_tag_id=tag)
+            # Isolate failures per document: without this a single bad document
+            # aborts the whole run, including the phases that come after it.
+            try:
+                await func(str(doc_id), remove_tag_id=tag)
+            except Exception:
+                logger.exception("Failed to process document", document_id=doc_id, tag_id=tag)
     else:
         # If no documents are retrieved
         logger.warning("No documents retrieved")

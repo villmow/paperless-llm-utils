@@ -55,15 +55,21 @@ async def titelize_document(document_id, remove_tag_id=None):
 
         logger.info("Generated title", document_id=document_id, title=title)
 
+        # An empty response would blank the existing title. Keep the tag so the
+        # document is retried and stays visible.
+        if not title.strip():
+            logger.error("OpenAI returned no title, keeping existing one", document_id=document_id)
+            return
+
         # Update the document with the new title
         logger.info("Updating document title in paperless", document_id=document_id)
         if remove_tag_id is not None:
-                tags = document.tags
-                logger.info("Document tags", document_id=document_id, tags=tags)
+            tags = document.tags
+            logger.info("Document tags", document_id=document_id, tags=tags)
 
-                tags = [tag for tag in tags if tag != remove_tag_id]
-                logger.info("Removing tag from document", document_id=document_id, tag_id=remove_tag_id)
-                patch_document(document_id, title=title, tags=tags)
+            tags = [tag for tag in tags if tag != remove_tag_id]
+            logger.info("Removing tag from document", document_id=document_id, tag_id=remove_tag_id)
+            patch_document(document_id, title=title, tags=tags)
         else:
             patch_document(document_id, title=title)
     finally:
